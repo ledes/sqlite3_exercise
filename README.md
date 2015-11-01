@@ -41,8 +41,3 @@ Use this information to backfill the `restaurantName` variable in the purchase_d
 corresponding record in the purchase table by setting it's status to "ok".
 
 To achieve your goal, you may write a script in any language (using any library) you want, do it with plain SQL queries, use Excel or use any combination of methods you think will help you.
-
-##Connect ruby to sqlite
-
-$ sqlite3 < employees.db
- Acces databse: $sqlite3 employees
