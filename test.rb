@@ -3,20 +3,38 @@ require "pg"
 require "pry"
 require "csv"
 
-db = SQLite3::Database.new 'restaurants.db'
 
-db.execute("INSERT INTO purchase_data (value) VALUES (?)", @workplace)
+begin
 
-@workplace = nil
+  db = SQLite3::Database.open "restaurants.db"
 
-# Select from purchase_data
-db.execute 'SELECT * FROM purchases JOIN purchase_data ON purchases.id = purchase_data.purchaseId' do |row|
-  if row[5] == "employeeId"
-    @purchaseId = row[1]
-    CSV.foreach('employees.csv', headers: true) do |csv_row|
-      @workplace =  csv_row[-1]
+  @workplace = nil
+
+  db.execute 'SELECT purchases.id, purchases.status, purchase_data.variableName, purchase_data.value
+    FROM purchases
+    JOIN purchase_data
+    ON purchases.id = purchase_data.purchaseId' do |row|
+    if row[1] == 'incomplete'
+      if row[2] == "employeeId"
+        CSV.foreach('employees.csv', headers: true) do |csv_row|
+          if csv_row[0] == row[3]
+            @workplace =  csv_row[-1]
+          end
+        end
+      elsif row[2] == "restaurantName" && row[3].nil?
+        row[3] = @workplace
+        row[1] = 'ok'
+      end
     end
-  elsif row[5] == "restaurantName" && row[6].nil?
-    row[6] = @workplace
+    print row
   end
+
+
+rescue SQLite3::Exception => e
+
+    puts "Exception occurred"
+    puts e
+
+ensure
+    db.close if db
 end
